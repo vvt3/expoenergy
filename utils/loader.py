@@ -3,6 +3,8 @@ from core.models import Bus
 
 
 def load_scenario(path):
-    df = pd.read_csv(path)
+    df = pd.read_csv(path, index_col=False)
 
-    return [Bus(**row) for row in df.to_dict("records")]
+    buses = [Bus(**row) for row in df.to_dict("records")]
+
+    return df, buses
