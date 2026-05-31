@@ -1,0 +1,21 @@
+Bus ID,Operator,Direction,Departure
+bus-BK-01,kpn,Bengaluru?Kochi,19:00
+bus-BK-02,freshbus,Bengaluru?Kochi,19:08
+bus-BK-03,flixbus,Bengaluru?Kochi,19:16
+bus-BK-04,kpn,Bengaluru?Kochi,19:24
+bus-BK-05,freshbus,Bengaluru?Kochi,19:32
+bus-BK-06,flixbus,Bengaluru?Kochi,19:40
+bus-BK-07,kpn,Bengaluru?Kochi,19:48
+bus-BK-08,freshbus,Bengaluru?Kochi,19:56
+bus-BK-09,flixbus,Bengaluru?Kochi,20:04
+bus-BK-10,kpn,Bengaluru?Kochi,20:12
+bus-KB-01,freshbus,Kochi?Bengaluru,19:00
+bus-KB-02,flixbus,Kochi?Bengaluru,19:08
+bus-KB-03,kpn,Kochi?Bengaluru,19:16
+bus-KB-04,freshbus,Kochi?Bengaluru,19:24
+bus-KB-05,flixbus,Kochi?Bengaluru,19:32
+bus-KB-06,kpn,Kochi?Bengaluru,19:40
+bus-KB-07,freshbus,Kochi?Bengaluru,19:48
+bus-KB-08,flixbus,Kochi?Bengaluru,19:56
+bus-KB-09,kpn,Kochi?Bengaluru,20:04
+bus-KB-10,freshbus,Kochi?Bengaluru,20:12

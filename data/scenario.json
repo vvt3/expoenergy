@@ -1,0 +1,42 @@
+{
+  "scenario_1": {
+    "name": "Even Spacing",
+    "weights": {
+      "individual": 1.0,
+      "operator": 1.0,
+      "overall": 1.0
+    }
+  },
+  "scenario_2": {
+    "name": "Bunched Start",
+    "weights": {
+      "individual": 1.0,
+      "operator": 1.0,
+      "overall": 1.0
+    }
+  },
+  "scenario_3": {
+    "name": "Asymmetric load",
+    "weights": {
+      "individual": 1.0,
+      "operator": 1.0,
+      "overall": 1.0
+    }
+  },
+  "scenario_4": {
+    "name": "Operator Heavy",
+    "weights": {
+      "individual": 1.0,
+      "operator": 2.0,
+      "overall": 1.0
+    }
+  },
+  "scenario_5": {
+    "name": "Worst Case Convergence",
+    "weights": {
+      "individual": 1.0,
+      "operator": 1.0,
+      "overall": 1.0
+    }
+  }
+}
