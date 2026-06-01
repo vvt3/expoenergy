@@ -1,19 +1,29 @@
 from core.models import BusSchedule, ChargeEvent
-from core.route import build_path, generate_valid_plans, SEGMENTS
-from core.route import CHARGE_TIME, MAX_RANGE
+from core.route import build_path, generate_valid_plans
+from core.route import CHARGE_TIME, MAX_RANGE, STATIONS, SEGMENTS
 
 
 class Scheduler:
     def schedule(self, buses, weights):
         schedules = []
-        station_free_time = {"A": 0, "B": 0, "C": 0, "D": 0}
+        station_free_time = {
+            station: [0] * chargers for station, chargers in STATIONS.items()
+        }
+        operator_wait_time = {}
+
+        # Sort incase of unsorted
+        buses = sorted(buses, key=lambda b: b.departure)
 
         for bus in buses:
             path = build_path(bus.source, bus.destination)
             plans = generate_valid_plans(path)
-            chosen_plan = self.choose_plan(plans, weights)
-
-            print(bus.bus_id, chosen_plan)
+            chosen_plan = self.choose_plan(
+                bus,
+                plans,
+                weights,
+                station_free_time,
+                operator_wait_time,
+            )
 
             events = []
             current_time = int(bus.departure)
@@ -43,14 +53,13 @@ class Scheduler:
                     raise Exception("invalid schedule, Bus exceeded its range")
 
                 if end in chosen_plan:
-                    available_time = station_free_time[end]
+                    chargers = station_free_time[end]
+                    charger_index = chargers.index(min(chargers))
+                    available_time = chargers[charger_index]
                     charge_start = max(arrival_time, available_time)
                     wait_time = charge_start - arrival_time
                     charge_end = charge_start + CHARGE_TIME
-                    station_free_time[end] = charge_end
-
-                    print(bus.bus_id, "arrived at", end)
-                    print(bus.bus_id, "charging at", end, "battery:", battery)
+                    chargers[charger_index] = charge_end
 
                     events.append(
                         ChargeEvent(
@@ -64,6 +73,10 @@ class Scheduler:
 
                     current_time = charge_end
                     battery = 240
+
+            total_wait = sum(event.wait_time for event in events)
+            operator_wait_time.setdefault(bus.operator, 0)
+            operator_wait_time[bus.operator] += total_wait
 
             final_arrival = current_time
 
@@ -79,14 +92,46 @@ class Scheduler:
 
         return schedules
 
-    def choose_plan(self, plans, weights):
-        return max(plans, key=lambda p: self.score_plan(p, weights))
+    def choose_plan(
+        self,
+        bus,
+        plans,
+        weights,
+        station_free_time,
+        operator_wait_time,
+    ):
+        return max(
+            plans,
+            key=lambda p: self.score_plan(
+                bus,
+                p,
+                weights,
+                station_free_time,
+                operator_wait_time,
+            ),
+        )
 
-    def score_plan(self, plan, weights):
+    def score_plan(
+        self,
+        bus,
+        plan,
+        weights,
+        station_free_time,
+        operator_wait_time,
+    ):
+
         stop_count = len(plan)
+        congestion = 0
+        for station in plan:
+            congestion += min(station_free_time[station])
+
+        # scoring
         individual_score = -stop_count
-        operator_score = 0
-        overall_score = -stop_count
+        operator_score = -operator_wait_time.get(
+            bus.operator,
+            0,
+        )
+        overall_score = -congestion
 
         return (
             weights["individual"] * individual_score

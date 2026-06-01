@@ -8,7 +8,15 @@ SEGMENTS = [
     ("D", "kochi", 100),
 ]
 
-STATIONS = ["A", "B", "C", "D"]
+# STATIONS = ["A", "B", "C", "D"]
+
+# Station: No. Chargers
+STATIONS = {
+    "A": 1,
+    "B": 1,
+    "C": 1,
+    "D": 1,
+}
 
 MAX_RANGE = 240
 
