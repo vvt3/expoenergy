@@ -15,5 +15,6 @@ def parse_time(t: str) -> int:
 def parse_time_reverse(t: int) -> str:
 
     hours, minutes = divmod(t, 60)
+    hours %= 24  # time past 12am
 
     return f"{hours:02d}:{minutes:02d}"

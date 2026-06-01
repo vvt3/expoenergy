@@ -1,5 +1,5 @@
 {
-  "scenario_1": {
+  "scenario1": {
     "name": "Even Spacing",
     "weights": {
       "individual": 1.0,
@@ -7,7 +7,7 @@
       "overall": 1.0
     }
   },
-  "scenario_2": {
+  "scenario2": {
     "name": "Bunched Start",
     "weights": {
       "individual": 1.0,
@@ -15,7 +15,7 @@
       "overall": 1.0
     }
   },
-  "scenario_3": {
+  "scenario3": {
     "name": "Asymmetric load",
     "weights": {
       "individual": 1.0,
@@ -23,7 +23,7 @@
       "overall": 1.0
     }
   },
-  "scenario_4": {
+  "scenario4": {
     "name": "Operator Heavy",
     "weights": {
       "individual": 1.0,
@@ -31,7 +31,7 @@
       "overall": 1.0
     }
   },
-  "scenario_5": {
+  "scenario5": {
     "name": "Worst Case Convergence",
     "weights": {
       "individual": 1.0,
