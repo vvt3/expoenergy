@@ -8,7 +8,6 @@ SEGMENTS = [
     ("D", "kochi", 100),
 ]
 
-# STATIONS = ["A", "B", "C", "D"]
 
 # Station: No. Chargers
 STATIONS = {
@@ -100,24 +99,6 @@ def distance_between_nodes(path):
     return total
 
 
-# def compute_stops(path, max_range=240):
-#     stops = []
-#     distance_acc = 0
-
-#     for i in range(len(path) - 1):
-#         dist = get_distance(path[i], path[i + 1])
-
-#         distance_acc += dist
-
-#         # if range is too great, charge at previous stop
-#         if distance_acc > max_range:
-#             stops.append(path[i])
-
-#             distance_acc = dist  # restart from this segment
-
-#     return stops
-
-
 def build_path(source, destination):
     nodes = ["bengaluru", "A", "B", "C", "D", "kochi"]
 
@@ -130,6 +111,5 @@ def build_path(source, destination):
         return list(reversed(nodes[end_idx : start_idx + 1]))
 
 
-# TODO
 def split_segments(path):
     return list(zip(path[:-1], path[1:]))

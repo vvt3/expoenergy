@@ -1,3 +1,5 @@
+from asyncio import wait
+
 from core.models import BusSchedule, ChargeEvent
 from core.route import build_path, generate_valid_plans, get_distance
 from core.route import CHARGE_TIME, MAX_RANGE, STATIONS, SEGMENTS
@@ -140,7 +142,13 @@ class Scheduler:
         temp_station_times = {
             station: times.copy() for station, times in station_free_time.items()
         }
+        # snapshot before
+        original_station_times = {
+            station: times.copy() for station, times in temp_station_times.items()
+        }
         estimated_wait = 0
+
+        per_stop_waits = []
 
         path = build_path(bus.source, bus.destination)
         sim_time = int(bus.departure)
@@ -153,13 +161,7 @@ class Scheduler:
             battery -= dist
             if battery < 0:
                 return float("-inf")
-            remaining_range = battery
-            print(
-                bus.bus_id,
-                station,
-                f"arrival={sim_time}",
-                f"battery={remaining_range}",
-            )
+            # remaining_range = battery
 
             if station in plan:
                 chargers = temp_station_times[station]
@@ -167,14 +169,8 @@ class Scheduler:
                 available_time = chargers[charger_index]
 
                 wait = max(0, available_time - sim_time)
-                # print(
-                #     f"{bus.bus_id}",
-                #     f"station={station}",
-                #     f"arrival={sim_time}",
-                #     f"charger_times={chargers}",
-                #     f"available={available_time}",
-                #     f"wait={wait}",
-                # )
+
+                per_stop_waits.append(wait)
                 estimated_wait += wait
 
                 charge_start = sim_time + wait
@@ -185,42 +181,31 @@ class Scheduler:
                 sim_time = charge_end
                 battery = MAX_RANGE  # reset the battery
 
-        stop_count = len(plan)
-
-        # scoring
-        # INDIVIDUAL
-        arrival_penalty = sim_time
+        # Individual
+        journey_duration = sim_time - int(bus.departure)
+        stops_with_wait = sum(1 for w in per_stop_waits if w > 0)
         individual_score = (
             -(estimated_wait * 100)
-            - (stop_count * CHARGE_TIME)
-            - (arrival_penalty * 0.1)
+            - (stops_with_wait * CHARGE_TIME)
+            - (journey_duration * 0.1)
         )
 
-        # OPERATOR
-        # operator_score = -(operator_wait_time.get(bus.operator, 0) * 1000)
-        operator_score = 0
+        # Operator
+        operator_score = -(operator_wait_time.get(bus.operator, 0) * 10)
 
-        # OVERALL
+        # Overall
         congestion_penalty = 0
+        sim_time_check = int(bus.departure)
+        for i in range(len(path) - 1):
+            dist = get_distance(path[i], path[i + 1])
+            sim_time_check += dist
+            station = path[i + 1]
+            if station in plan and station in original_station_times:
+                earliest_free = min(original_station_times[station])
+                backlog = max(0, earliest_free - sim_time_check)
+                congestion_penalty += backlog
 
-        for station, chargers in temp_station_times.items():
-            congestion_penalty += max(chargers)
-        overall_score = -congestion_penalty
-
-        # print(
-        #     bus.bus_id,
-        #     plan,
-        #     "stops=",
-        #     stop_count,
-        #     "wait=",
-        #     estimated_wait,
-        #     "score=",
-        #     (
-        #         weights["individual"] * individual_score
-        #         + weights["operator"] * operator_score
-        #         + weights["overall"] * overall_score
-        #     ),
-        # )
+        overall_score = -(congestion_penalty * 150)
 
         return (
             weights["individual"] * individual_score
