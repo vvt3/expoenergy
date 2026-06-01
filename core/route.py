@@ -15,21 +15,49 @@ CHARGE_TIME = 25
 SPEED = 60
 
 
-def route_distance(path):
-    total = 0
+def get_distance(a, b):
+    """
+    Get the distance between 2 segements
+    """
+    for s, e, d in SEGMENTS:
+        if (s, e) == (a, b) or (e, s) == (a, b):
+            return d
+    raise ValueError(f"Invalid segment from {a} -> {b}")
+
+
+def get_next_distance(path, i):
+
+    if i >= len(path) - 1:
+        return None
+
+    start = path[i]
+    end = path[i + 1]
+
+    for s, e, d in SEGMENTS:
+        if (s, e) == (start, end) or (e, s) == (start, end):
+            return int(d)
+
+    raise ValueError(f"Invalid segment from {start} -> {end}")
+
+
+def compute_stops(path, max_range=240):
+    stops = []
+    distance_acc = 0
+
+    last_charge_index = 0
 
     for i in range(len(path) - 1):
-        seg = (path[i], path[i + 1])
+        dist = get_distance(path[i], path[i + 1])
 
-        for start, end, dist in SEGMENTS:
-            if (start, end) == seg:
-                total += dist
-                break
-            if (end, start) == seg:
-                total += dist
-                break
+        distance_acc += dist
 
-    return total
+        # if range is too great, charge at previous stop
+        if distance_acc > max_range:
+            stops.append(path[i])
+
+            distance_acc = dist  # restart from this segment
+
+    return stops
 
 
 def build_path(source, destination):
