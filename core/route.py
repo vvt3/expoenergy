@@ -1,9 +1,9 @@
 SEGMENTS = [
-    ("Bengaluru", "A", 100),
+    ("bengaluru", "A", 100),
     ("A", "B", 120),
     ("B", "C", 100),
     ("C", "D", 120),
-    ("D", "Kochi", 100),
+    ("D", "kochi", 100),
 ]
 
 STATIONS = ["A", "B", "C", "D"]
@@ -33,7 +33,7 @@ def route_distance(path):
 
 
 def build_path(source, destination):
-    nodes = ["Bengaluru", "A", "B", "C", "D", "Kochi"]
+    nodes = ["bengaluru", "A", "B", "C", "D", "kochi"]
 
     start_idx = nodes.index(source)
     end_idx = nodes.index(destination)

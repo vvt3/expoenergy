@@ -11,7 +11,7 @@ class Scheduler:
             path = build_path(bus.source, bus.destination)
 
             events = []
-            current_time = int(bus.departure_time)
+            current_time = int(bus.departure)
 
             # travel segment by segment
             for i in range(len(path) - 1):

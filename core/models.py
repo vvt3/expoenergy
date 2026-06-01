@@ -8,7 +8,7 @@ class Bus:
     operator: str
     source: str
     destination: str
-    departure: str
+    departure: int
 
 
 @dataclass
