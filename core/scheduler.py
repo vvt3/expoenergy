@@ -1,5 +1,5 @@
 from core.models import BusSchedule, ChargeEvent
-from core.route import build_path, generate_valid_plans
+from core.route import build_path, generate_valid_plans, get_distance
 from core.route import CHARGE_TIME, MAX_RANGE, STATIONS, SEGMENTS
 
 
@@ -119,19 +119,37 @@ class Scheduler:
         station_free_time,
         operator_wait_time,
     ):
+        estimated_wait = 0
+
+        path = build_path(bus.source, bus.destination)
+        sim_time = int(bus.departure)
+
+        for i in range(len(path) - 1):
+            dist = get_distance(path[i], path[i + 1])
+            sim_time += dist
+            station = path[i + 1]
+
+            if station in plan:
+                chargers = station_free_time[station]
+                earliest_free = min(chargers)
+                wait = max(0, earliest_free - sim_time)
+                estimated_wait += wait
+
+                sim_time += wait + CHARGE_TIME
 
         stop_count = len(plan)
-        congestion = 0
-        for station in plan:
-            congestion += min(station_free_time[station])
+        # congestion = 0
+        # for station in plan:
+        #     congestion += min(station_free_time[station])
 
         # scoring
-        individual_score = -stop_count
+        # individual_score = -(stop_count * CHARGE_TIME) - estimated_wait
+        individual_score = -(stop_count * CHARGE_TIME) - (estimated_wait * 1000)
         operator_score = -operator_wait_time.get(
             bus.operator,
             0,
         )
-        overall_score = -congestion
+        overall_score = -estimated_wait
 
         return (
             weights["individual"] * individual_score
