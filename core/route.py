@@ -8,7 +8,6 @@ SEGMENTS = [
     ("D", "kochi", 100),
 ]
 
-
 # Station: No. Chargers
 STATIONS = {
     "A": 1,
@@ -100,7 +99,7 @@ def distance_between_nodes(path):
 
 
 def build_path(source, destination):
-    nodes = ["bengaluru", "A", "B", "C", "D", "kochi"]
+    nodes = ["bengaluru", *STATIONS.keys(), "kochi"]
 
     start_idx = nodes.index(source)
     end_idx = nodes.index(destination)
