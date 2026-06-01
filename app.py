@@ -1,6 +1,9 @@
 import streamlit as st
+import pandas as pd
 from utils.loader import load_scenario
+from utils.time import parse_time_reverse
 from core.scheduler import Scheduler
+
 
 st.set_page_config(page_title="Bus Scheduler")
 st.title("Exponent Energy Bus Scheduler")
@@ -21,7 +24,7 @@ df, buses = load_scenario(csv_path)
 
 st.subheader("Scenario Input")
 
-st.dataframe(df, height=250)
+st.dataframe(df, height=250, hide_index=True)
 
 scheduler = Scheduler()
 result = scheduler.schedule(buses)
@@ -29,8 +32,22 @@ result = scheduler.schedule(buses)
 st.subheader("Schedule Output")
 
 for bus in result:
-    st.write(bus.bus_id)
+    st.write(f"Bus: {bus.bus_id}")
+    schedule = {
+        "Station": [],
+        "Arrival": [],
+        # "Charge Start Time": [],
+        "Departure": [],
+        "Wait Time": [],
+    }
     for e in bus.events:
-        st.write(e)
-    st.write("Final:", bus.final_arrival_time)
+        schedule["Station"].append(e.station)
+        schedule["Arrival"].append(parse_time_reverse(e.arrival_time))
+        # schedule["Charge Start Time"].append(e.charge_start)
+        schedule["Departure"].append(parse_time_reverse(e.charge_end))
+        schedule["Wait Time"].append(e.wait_time)
+        # schedule["Wait Time"].append(parse_time_reverse(e.wait_time))
+    df = pd.DataFrame(schedule)
+    st.dataframe(df, use_container_width=True, hide_index=True)
+    st.write("Final:", parse_time_reverse(bus.final_arrival_time))
     st.write("---")

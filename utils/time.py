@@ -10,3 +10,10 @@ def parse_time(t: str) -> int:
     """
     h, m = t.split(":")
     return int(h) * 60 + int(m)
+
+
+def parse_time_reverse(t: int) -> str:
+
+    hours, minutes = divmod(t, 60)
+
+    return f"{hours:02d}:{minutes:02d}"
