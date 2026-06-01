@@ -5,6 +5,7 @@ from core.route import CHARGE_TIME, MAX_RANGE, STATIONS, SEGMENTS
 
 class Scheduler:
     def schedule(self, buses, weights):
+
         schedules = []
         station_free_time = {
             station: [0] * chargers for station, chargers in STATIONS.items()
@@ -15,6 +16,9 @@ class Scheduler:
         buses = sorted(buses, key=lambda b: b.departure)
 
         for bus in buses:
+            print(bus.bus_id)
+            print(station_free_time)
+
             path = build_path(bus.source, bus.destination)
             plans = generate_valid_plans(path)
             chosen_plan = self.choose_plan(
@@ -49,8 +53,11 @@ class Scheduler:
                 arrival_time = current_time
                 battery -= dist
 
+                # Error checks
                 if battery < 0:
                     raise Exception("invalid schedule, Bus exceeded its range")
+                if chosen_plan is None:
+                    raise Exception(f"No valid charging plan found for {bus.bus_id}")
 
                 if end in chosen_plan:
                     chargers = station_free_time[end]
@@ -100,16 +107,25 @@ class Scheduler:
         station_free_time,
         operator_wait_time,
     ):
-        return max(
-            plans,
-            key=lambda p: self.score_plan(
+        best_plan = None
+        best_score = float("-inf")
+
+        for plan in plans:
+            score = self.score_plan(
                 bus,
-                p,
+                plan,
                 weights,
                 station_free_time,
                 operator_wait_time,
-            ),
-        )
+            )
+
+            if score > best_score:
+                best_score = score
+                best_plan = plan
+
+        print(f"{bus.bus_id} SELECTED {best_plan} score={best_score}")
+
+        return best_plan
 
     def score_plan(
         self,
@@ -119,6 +135,11 @@ class Scheduler:
         station_free_time,
         operator_wait_time,
     ):
+        battery = MAX_RANGE
+
+        temp_station_times = {
+            station: times.copy() for station, times in station_free_time.items()
+        }
         estimated_wait = 0
 
         path = build_path(bus.source, bus.destination)
@@ -129,27 +150,77 @@ class Scheduler:
             sim_time += dist
             station = path[i + 1]
 
+            battery -= dist
+            if battery < 0:
+                return float("-inf")
+            remaining_range = battery
+            print(
+                bus.bus_id,
+                station,
+                f"arrival={sim_time}",
+                f"battery={remaining_range}",
+            )
+
             if station in plan:
-                chargers = station_free_time[station]
-                earliest_free = min(chargers)
-                wait = max(0, earliest_free - sim_time)
+                chargers = temp_station_times[station]
+                charger_index = chargers.index(min(chargers))
+                available_time = chargers[charger_index]
+
+                wait = max(0, available_time - sim_time)
+                # print(
+                #     f"{bus.bus_id}",
+                #     f"station={station}",
+                #     f"arrival={sim_time}",
+                #     f"charger_times={chargers}",
+                #     f"available={available_time}",
+                #     f"wait={wait}",
+                # )
                 estimated_wait += wait
 
-                sim_time += wait + CHARGE_TIME
+                charge_start = sim_time + wait
+                charge_end = charge_start + CHARGE_TIME
+
+                chargers[charger_index] = charge_end
+
+                sim_time = charge_end
+                battery = MAX_RANGE  # reset the battery
 
         stop_count = len(plan)
-        # congestion = 0
-        # for station in plan:
-        #     congestion += min(station_free_time[station])
 
         # scoring
-        # individual_score = -(stop_count * CHARGE_TIME) - estimated_wait
-        individual_score = -(stop_count * CHARGE_TIME) - (estimated_wait * 1000)
-        operator_score = -operator_wait_time.get(
-            bus.operator,
-            0,
+        # INDIVIDUAL
+        arrival_penalty = sim_time
+        individual_score = (
+            -(estimated_wait * 100)
+            - (stop_count * CHARGE_TIME)
+            - (arrival_penalty * 0.1)
         )
-        overall_score = -estimated_wait
+
+        # OPERATOR
+        # operator_score = -(operator_wait_time.get(bus.operator, 0) * 1000)
+        operator_score = 0
+
+        # OVERALL
+        congestion_penalty = 0
+
+        for station, chargers in temp_station_times.items():
+            congestion_penalty += max(chargers)
+        overall_score = -congestion_penalty
+
+        # print(
+        #     bus.bus_id,
+        #     plan,
+        #     "stops=",
+        #     stop_count,
+        #     "wait=",
+        #     estimated_wait,
+        #     "score=",
+        #     (
+        #         weights["individual"] * individual_score
+        #         + weights["operator"] * operator_score
+        #         + weights["overall"] * overall_score
+        #     ),
+        # )
 
         return (
             weights["individual"] * individual_score
