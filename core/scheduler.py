@@ -20,7 +20,7 @@ class Scheduler:
         for bus in buses:
             path = build_path(bus.source, bus.destination)
             plans = generate_valid_plans(path)
-            chosen_plan = self._choose_plan(
+            chosen_plan = self.choose_plan(
                 bus, plans, weights, station_free_time, operator_wait_time
             )
 
@@ -51,12 +51,12 @@ class Scheduler:
     # Plan selection
     # ------------------------------------------------------------------
 
-    def _choose_plan(self, bus, plans, weights, station_free_time, operator_wait_time):
+    def choose_plan(self, bus, plans, weights, station_free_time, operator_wait_time):
         best_plan = None
         best_score = float("-inf")
 
         for plan in plans:
-            score = self._score_plan(
+            score = self.score_plan(
                 bus, plan, weights, station_free_time, operator_wait_time
             )
             if score > best_score:
@@ -65,7 +65,7 @@ class Scheduler:
 
         return best_plan
 
-    def _score_plan(self, bus, plan, weights, station_free_time, operator_wait_time):
+    def score_plan(self, bus, plan, weights, station_free_time, operator_wait_time):
         # snapshot charger state BEFORE
         original_station_times = {
             s: times.copy() for s, times in station_free_time.items()
