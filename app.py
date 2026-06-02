@@ -19,10 +19,10 @@ with col_left:
 
     st.markdown("**Weights**")
     w_individual = st.slider(
-        "Individual", 0.0, 3.0, float(weights["individual"]), step=0.5
+        "Individual", 0.0, 10.0, float(weights["individual"]), step=0.5
     )
-    w_operator = st.slider("Operator", 0.0, 3.0, float(weights["operator"]), step=0.5)
-    w_overall = st.slider("Overall", 0.0, 3.0, float(weights["overall"]), step=0.5)
+    w_operator = st.slider("Operator", 0.0, 10.0, float(weights["operator"]), step=0.5)
+    w_overall = st.slider("Overall", 0.0, 10.0, float(weights["overall"]), step=0.5)
     weights = {"individual": w_individual, "operator": w_operator, "overall": w_overall}
 
 csv_path = f"data/{scenario}.csv"

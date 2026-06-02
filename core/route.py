@@ -16,7 +16,7 @@ STATIONS = {
     "D": 1,
 }
 
-MAX_RANGE = 240
+MAX_RANGE = 220
 
 CHARGE_TIME = 25
 

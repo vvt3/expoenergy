@@ -129,7 +129,7 @@ class Scheduler:
         # use objective weights to score plan
         total = 0.0
         for objective in self.objectives:
-            w = weights.get(objective.name, 1.0)
+            w = weights.get(objective.name)
             total += w * objective.score(ctx)
 
         return total

@@ -73,6 +73,9 @@ class IndividualObjective(Objective):
         # penalise stops where the bus actually queued
         stops_with_wait = sum(1 for w in ctx.per_stop_waits if w > 0)
 
+        return -(ctx.estimated_wait * 100) - (stops_with_wait * CHARGE_TIME)
+
+        # with stop time
         return (
             -(ctx.estimated_wait * 100)
             - (stops_with_wait * CHARGE_TIME)
@@ -94,6 +97,9 @@ class OperatorObjective(Objective):
         fleet_wait = ctx.operator_wait_time.get(ctx.operator, 0)
         marginal_cost = ctx.estimated_wait * 100
         existing_burden = fleet_wait * 10
+
+        return -(fleet_wait * 100)
+        # old
         return -(marginal_cost + existing_burden)
 
 
@@ -110,30 +116,27 @@ class OverallObjective(Objective):
 
     def score(self, ctx: PlanContext) -> float:
         total_backlog = sum(ctx.station_backlogs.values())
+
         return -(total_backlog * 150)
 
 
-# class ElectricityPriceObjective(Objective):
+# class ElectricityPrice(Objective):
 #     name = "electricity_price"
 
 #     def score(self, ctx: PlanContext) -> float:
 #         from core.route import CHARGE_TIME
-
-#         # Reconstruct approximate charge start times from departure + journey
-#         # Lower cost (off-peak midnight-6am = 0-360 mins) is rewarded
 #         penalty = 0
 #         sim_time = ctx.departure
 #         for wait in ctx.per_stop_waits:
 #             charge_start = sim_time + wait
 #             hour_of_day = (charge_start // 60) % 24
 #             if 0 <= hour_of_day < 6:
-#                 penalty += 0  # cheap, no penalty
+#                 penalty += 0  # cheap
 #             else:
-#                 penalty += 50  # peak hours, penalise
+#                 penalty += 50  # peak hours
 #             sim_time = charge_start + CHARGE_TIME
 
 #         return -penalty
-
 
 # ---------------------------------------------------------------------------
 # Registry — the scheduler uses this list, in this order.
